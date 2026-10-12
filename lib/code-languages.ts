@@ -1,0 +1,17 @@
+export const CODE_LANGUAGES: { value: string; label: string }[] = [
+  { value: 'python', label: 'Python' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'jsx', label: 'JSX' },
+  { value: 'tsx', label: 'TSX' },
+  { value: 'bash', label: 'Bash' },
+  { value: 'json', label: 'JSON' },
+  { value: 'markup', label: 'HTML' },
+  { value: 'css', label: 'CSS' },
+  { value: 'c', label: 'C' },
+  { value: 'cpp', label: 'C++' },
+  { value: 'java', label: 'Java' },
+  { value: 'sql', label: 'SQL' },
+  { value: 'arduino', label: 'Arduino' },
+  { value: 'text', label: 'Plain text' },
+];

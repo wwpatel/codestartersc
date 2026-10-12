@@ -61,3 +61,30 @@ export interface Quiz {
   error: string | null;
   created_at: string;
 }
+
+export interface SectorWithCounts extends Sector {
+  unitCount: number;
+  lessonCount: number;
+}
+
+export type SectorLesson = Pick<
+  Lesson,
+  'id' | 'title' | 'description' | 'sort_order' | 'unit_id'
+> & {
+  quizStatus: QuizStatus | null;
+  blockTypes: BlockType[];
+};
+
+export interface SectorUnit extends Unit {
+  lessons: SectorLesson[];
+}
+
+export interface SectorWithUnits extends Sector {
+  units: SectorUnit[];
+}
+
+export interface LessonDetail extends Lesson {
+  unit: Unit & { sector: Sector };
+  blocks: LessonBlock[];
+  quiz: Quiz | null;
+}
