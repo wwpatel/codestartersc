@@ -8,6 +8,10 @@ import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LessonCard } from '@/components/learn/LessonCard';
+import { AddUnitButton } from '@/components/admin/AddUnitButton';
+import { UnitControls } from '@/components/admin/UnitControls';
+import { AddLessonButton } from '@/components/admin/AddLessonButton';
+import { LessonControls } from '@/components/admin/LessonControls';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +35,7 @@ export default async function SectorPage({
   const isAdmin = session?.profile.role === 'admin';
   const meta = sectorMeta(sector.slug);
   const lessonCount = sector.units.reduce((n, u) => n + u.lessons.length, 0);
+  const orderedUnitIds = sector.units.map((u) => u.id);
 
   return (
     <Container>
@@ -41,9 +46,12 @@ export default async function SectorPage({
           title={`${sector.name}.`}
           description={meta.blurb}
         />
-        <p className="hidden shrink-0 text-xs uppercase tracking-[0.16em] text-muted md:block">
-          {pluralize(sector.units.length, 'unit')} • {pluralize(lessonCount, 'lesson')}
-        </p>
+        <div className="flex shrink-0 items-center gap-4">
+          <p className="hidden text-xs uppercase tracking-[0.16em] text-muted md:block">
+            {pluralize(sector.units.length, 'unit')} • {pluralize(lessonCount, 'lesson')}
+          </p>
+          {isAdmin ? <AddUnitButton sectorId={sector.id} /> : null}
+        </div>
       </div>
 
       {sector.units.length === 0 ? (
@@ -55,6 +63,7 @@ export default async function SectorPage({
               ? 'Add the first unit to start building this program.'
               : 'Lessons for this program are on the way.'
           }
+          action={isAdmin ? <AddUnitButton sectorId={sector.id} /> : undefined}
         />
       ) : (
         <div className="mt-12 space-y-14">
@@ -68,27 +77,59 @@ export default async function SectorPage({
                     <p className="mt-1 max-w-2xl text-sm text-muted">{unit.description}</p>
                   ) : null}
                 </div>
-                <p className="shrink-0 text-xs uppercase tracking-[0.16em] text-muted">
-                  {pluralize(unit.lessons.length, 'lesson')}
-                </p>
+                <div className="flex shrink-0 items-center gap-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">
+                    {pluralize(unit.lessons.length, 'lesson')}
+                  </p>
+                  {isAdmin ? (
+                    <UnitControls
+                      unit={unit}
+                      sectorId={sector.id}
+                      orderedIds={orderedUnitIds}
+                      index={i}
+                    />
+                  ) : null}
+                </div>
               </div>
               {unit.lessons.length === 0 ? (
                 <EmptyState
                   className="mt-6"
                   title={isAdmin ? 'No lessons yet.' : 'No lessons in this unit yet.'}
                   text={isAdmin ? 'Add a lesson to this unit.' : 'Check back soon.'}
+                  action={
+                    isAdmin ? (
+                      <AddLessonButton unitId={unit.id} sectorSlug={sector.slug} />
+                    ) : undefined
+                  }
                 />
               ) : (
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  {unit.lessons.map((lesson, j) => (
-                    <LessonCard
-                      key={lesson.id}
-                      lesson={lesson}
-                      index={j}
-                      href={`/learn/${sector.slug}/${lesson.id}`}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    {unit.lessons.map((lesson, j) => (
+                      <LessonCard
+                        key={lesson.id}
+                        lesson={lesson}
+                        index={j}
+                        href={`/learn/${sector.slug}/${lesson.id}`}
+                      >
+                        {isAdmin ? (
+                          <LessonControls
+                            lesson={lesson}
+                            unitId={unit.id}
+                            sectorSlug={sector.slug}
+                            orderedIds={unit.lessons.map((l) => l.id)}
+                            index={j}
+                          />
+                        ) : null}
+                      </LessonCard>
+                    ))}
+                  </div>
+                  {isAdmin ? (
+                    <div className="mt-4">
+                      <AddLessonButton unitId={unit.id} sectorSlug={sector.slug} />
+                    </div>
+                  ) : null}
+                </>
               )}
             </section>
           ))}

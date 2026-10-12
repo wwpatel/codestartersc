@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Pencil } from 'lucide-react';
 import { getLessonDetail, getSectorBySlug } from '@/lib/data/curriculum';
 import { getSession } from '@/lib/auth/session';
 import { Container } from '@/components/ui/Container';
@@ -10,6 +10,7 @@ import { LessonSidebar } from '@/components/learn/LessonSidebar';
 import { LessonDrawer } from '@/components/learn/LessonDrawer';
 import { LessonVideo } from '@/components/lesson/LessonVideo';
 import { LessonBlocks } from '@/components/lesson/LessonBlocks';
+import { buttonClasses } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 
 export const dynamic = 'force-dynamic';
@@ -28,12 +29,13 @@ export default async function LessonPage({
 }: {
   params: { sector: string; lessonId: string };
 }) {
-  const [sector, lesson] = await Promise.all([
+  const [sector, lesson, session] = await Promise.all([
     getSectorBySlug(params.sector),
     getLessonDetail(params.lessonId),
     getSession(),
   ]);
   if (!sector || !lesson || lesson.unit.sector_id !== sector.id) notFound();
+  const isAdmin = session?.profile.role === 'admin';
 
   const flat = sector.units.flatMap((u) => u.lessons.map((l) => ({ unit: u, lesson: l })));
   const position = flat.findIndex((f) => f.lesson.id === lesson.id);
@@ -62,14 +64,29 @@ export default async function LessonPage({
           <div className="mb-6 lg:hidden">
             <LessonDrawer>{sidebar}</LessonDrawer>
           </div>
-          <p className="text-xs uppercase tracking-[3px] text-muted">
-            {sector.name} • Unit {unitIndex + 1} • Lesson {lessonIndex + 1}
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs uppercase tracking-[3px] text-muted">
+              {sector.name} • Unit {unitIndex + 1} • Lesson {lessonIndex + 1}
+            </p>
+            {isAdmin ? (
+              <Link
+                href={`/learn/${sector.slug}/${lesson.id}/edit`}
+                className={buttonClasses('secondary', 'sm')}
+              >
+                <Pencil className="h-3.5 w-3.5" /> Edit lesson
+              </Link>
+            ) : null}
+          </div>
           <h1 className="mt-3 text-3xl font-medium tracking-[-1px] md:text-4xl">{lesson.title}</h1>
           <div className="mt-4 flex gap-2">
             <Tag variant="sky">Video</Tag>
             {quiz ? <Tag variant="emerald">Quiz</Tag> : null}
             {lesson.blocks.some((b) => b.type === 'code') ? <Tag variant="neutral">Code</Tag> : null}
+            {isAdmin && lesson.quiz && lesson.quiz.status !== 'ready' ? (
+              <Tag variant="amber">
+                {lesson.quiz.status === 'no_captions' ? 'No captions' : 'Quiz failed'}
+              </Tag>
+            ) : null}
           </div>
           <div className="mt-8">
             <LessonVideo youtubeId={lesson.youtube_id} title={lesson.title} quiz={quiz} />
