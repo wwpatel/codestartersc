@@ -35,9 +35,12 @@ export async function reorderRows(
     throw new HttpError(400, 'Reorder list does not match.');
   }
 
-  await Promise.all(
+  const results = await Promise.all(
     ids.map((id, index) =>
       supabase.from(table).update({ sort_order: index }).eq('id', id),
     ),
   );
+  for (const res of results) {
+    if (res.error) throw res.error;
+  }
 }

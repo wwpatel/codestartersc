@@ -7,7 +7,7 @@ import {
 } from 'youtube-transcript';
 
 const MAX_CHARS = 60_000;
-const TIMEOUT_MS = 20_000;
+const TIMEOUT_MS = 15_000;
 
 function decodeEntities(text: string) {
   return text
@@ -32,21 +32,24 @@ async function fetchSegments(videoId: string) {
 }
 
 export async function fetchTranscript(videoId: string): Promise<string | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
   const segments = await Promise.race([
     fetchSegments(videoId),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Transcript fetch timed out.')), TIMEOUT_MS),
-    ),
-  ]).catch((err) => {
-    if (
-      err instanceof YoutubeTranscriptDisabledError ||
-      err instanceof YoutubeTranscriptNotAvailableError ||
-      err instanceof YoutubeTranscriptVideoUnavailableError
-    ) {
-      return null;
-    }
-    throw err;
-  });
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Transcript fetch timed out.')), TIMEOUT_MS);
+    }),
+  ])
+    .catch((err) => {
+      if (
+        err instanceof YoutubeTranscriptDisabledError ||
+        err instanceof YoutubeTranscriptNotAvailableError ||
+        err instanceof YoutubeTranscriptVideoUnavailableError
+      ) {
+        return null;
+      }
+      throw err;
+    })
+    .finally(() => clearTimeout(timer));
 
   if (!segments || segments.length === 0) return null;
 

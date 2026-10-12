@@ -76,7 +76,7 @@ function retryMessages(
 
 function defaultDeps(): GenerateDeps {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  const client = new Anthropic({ apiKey, timeout: 50_000, maxRetries: 1 });
+  const client = new Anthropic({ apiKey, timeout: 35_000, maxRetries: 0 });
   return {
     fetchTranscript,
     createMessage: (params) => client.messages.create(params),
