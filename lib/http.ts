@@ -15,3 +15,20 @@ export async function readJson(request: Request): Promise<unknown | null> {
     return null;
   }
 }
+
+export class HttpError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+export function handleRouteError(err: unknown) {
+  if (err instanceof HttpError) {
+    return jsonError(err.status, err.message);
+  }
+  console.error(err);
+  return jsonError(500, 'Something went wrong.');
+}
