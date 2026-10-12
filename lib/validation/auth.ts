@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { USERNAME_RE, normalizeUsername } from '@/lib/auth/username';
 
+export { firstIssue } from './shared';
+
 const usernameSchema = z
   .string()
   .transform(normalizeUsername)
@@ -25,7 +27,3 @@ export const loginSchema = z.object({
 
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-
-export function firstIssue(error: z.ZodError) {
-  return error.issues[0]?.message ?? 'Invalid input.';
-}
