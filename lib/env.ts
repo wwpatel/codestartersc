@@ -6,7 +6,7 @@ export function getPublicSupabaseEnv() {
       'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Check your .env.local.',
     );
   }
-  return { url, anonKey };
+  return { url: new URL(url.trim()).origin, anonKey: anonKey.trim() };
 }
 
 export function getServiceRoleKey() {
