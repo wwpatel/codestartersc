@@ -69,6 +69,7 @@ export async function handleSignup(
     if (createError && isDuplicateError(createError)) {
       return { status: 409, body: { error: 'That username is taken.' } };
     }
+    console.error('signup: createUser failed', createError);
     return { status: 500, body: { error: 'Could not create the account.' } };
   }
 
@@ -81,6 +82,7 @@ export async function handleSignup(
     if (profileError.code === '23505') {
       return { status: 409, body: { error: 'That username is taken.' } };
     }
+    console.error('signup: profile insert failed', profileError);
     return { status: 500, body: { error: 'Could not create the account.' } };
   }
 
