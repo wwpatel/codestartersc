@@ -82,11 +82,6 @@ export default async function LessonPage({
             <Tag variant="sky">Video</Tag>
             {quiz ? <Tag variant="emerald">Quiz</Tag> : null}
             {lesson.blocks.some((b) => b.type === 'code') ? <Tag variant="neutral">Code</Tag> : null}
-            {isAdmin && lesson.quiz && lesson.quiz.status !== 'ready' ? (
-              <Tag variant="amber">
-                {lesson.quiz.status === 'no_captions' ? 'No captions' : 'Quiz failed'}
-              </Tag>
-            ) : null}
           </div>
           <div className="mt-8">
             <LessonVideo youtubeId={lesson.youtube_id} title={lesson.title} quiz={quiz} />

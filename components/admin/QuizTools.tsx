@@ -42,26 +42,16 @@ export function QuizTools({ lessonId, quiz }: { lessonId: string; quiz: Quiz | n
 
   return (
     <div>
-      <div className="flex items-center gap-3">
-        {quiz?.status === 'ready' ? (
-          <Tag variant="emerald">Ready</Tag>
-        ) : quiz?.status === 'no_captions' ? (
-          <Tag variant="amber">No captions</Tag>
-        ) : quiz?.status === 'failed' ? (
-          <Tag variant="amber">Failed</Tag>
-        ) : (
-          <Tag variant="neutral">Not generated</Tag>
-        )}
-      </div>
+      {quiz?.status === 'ready' ? <Tag variant="emerald">Ready</Tag> : null}
 
-      <p className="mt-3 text-sm text-muted">
+      <p className={quiz?.status === 'ready' ? 'mt-3 text-sm text-muted' : 'text-sm text-muted'}>
         {!quiz
           ? 'Save the lesson to build a quiz from the video transcript.'
           : quiz.status === 'ready'
             ? `Students see this quiz when the video ends. Built ${new Date(quiz.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}.`
             : quiz.status === 'no_captions'
-              ? 'YouTube did not return captions to the server, so a quiz could not be built. YouTube often blocks caption requests from hosting providers even when a video has captions. Paste the transcript below to build the quiz. Until then, students see no quiz for this lesson.'
-              : `Quiz generation failed: ${quiz.error}`}
+              ? 'YouTube did not share captions for this video with the server. Paste the transcript below to build the quiz.'
+              : 'The quiz could not be built. Click Regenerate quiz, or paste the transcript below.'}
       </p>
 
       {quiz?.status === 'ready' ? (
