@@ -80,7 +80,7 @@ Statuses:
 
 Students never wait on generation.
 
-Troubleshooting: videos must have captions (auto-generated captions count). YouTube sometimes blocks caption requests from cloud IP ranges, so a quiz that fails on Vercel with a transcript error may work on retry or locally. A `failed` status whose error mentions the model usually means `QUIZ_MODEL` or `ANTHROPIC_API_KEY` is wrong.
+Troubleshooting: videos must have captions (auto-generated captions count). YouTube often blocks caption requests from cloud hosting (including Vercel), which shows up as `no_captions` even for videos that have captions. When that happens, open the video on YouTube, click "Show transcript" in the description, copy it, and paste it into the Transcript box on the lesson's edit page to build the quiz. A `failed` status whose error mentions the model usually means `QUIZ_MODEL` or `ANTHROPIC_API_KEY` is wrong.
 
 ## Roles and security
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Tag } from '@/components/ui/Tag';
+import { Textarea } from '@/components/ui/Textarea';
 import type { Quiz } from '@/lib/supabase/types';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
@@ -13,18 +14,24 @@ export function QuizTools({ lessonId, quiz }: { lessonId: string; quiz: Quiz | n
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState('');
 
-  async function regenerate() {
+  async function regenerate(pasted?: string) {
     if (pending) return;
     setError(null);
     setPending(true);
     try {
-      const res = await fetch(`/api/admin/lessons/${lessonId}/quiz`, { method: 'POST' });
+      const res = await fetch(`/api/admin/lessons/${lessonId}/quiz`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(pasted ? { transcript: pasted } : {}),
+      });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.error ?? 'Something went wrong. Try again.');
         return;
       }
+      setTranscript('');
       router.refresh();
     } catch {
       setError('Something went wrong. Try again.');
@@ -53,7 +60,7 @@ export function QuizTools({ lessonId, quiz }: { lessonId: string; quiz: Quiz | n
           : quiz.status === 'ready'
             ? `Students see this quiz when the video ends. Built ${new Date(quiz.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}.`
             : quiz.status === 'no_captions'
-              ? 'This video has no captions, so a quiz could not be built. Students see no quiz for this lesson. Use a video with captions or try again later.'
+              ? 'YouTube did not return captions to the server, so a quiz could not be built. YouTube often blocks caption requests from hosting providers even when a video has captions. Paste the transcript below to build the quiz. Until then, students see no quiz for this lesson.'
               : `Quiz generation failed: ${quiz.error}`}
       </p>
 
@@ -91,9 +98,34 @@ export function QuizTools({ lessonId, quiz }: { lessonId: string; quiz: Quiz | n
         </ol>
       ) : null}
 
+      {quiz?.status !== 'ready' ? (
+        <div className="mt-6">
+          <label htmlFor="quiz-transcript" className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-muted">
+            Transcript
+          </label>
+          <Textarea
+            id="quiz-transcript"
+            rows={6}
+            value={transcript}
+            onChange={(e) => setTranscript(e.target.value)}
+            placeholder="On YouTube, open the video description, click Show transcript, then copy and paste it here."
+          />
+          <div className="mt-3">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => regenerate(transcript)}
+              disabled={pending || transcript.trim().length === 0}
+            >
+              Build quiz from transcript
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
       <div className="mt-6">
-        <Button size="sm" onClick={regenerate} disabled={pending}>
+        <Button size="sm" onClick={() => regenerate()} disabled={pending}>
           <RefreshCw className="h-3.5 w-3.5" />
           {pending ? 'Building the quiz… this can take a minute.' : 'Regenerate quiz'}
         </Button>

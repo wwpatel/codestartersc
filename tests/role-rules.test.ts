@@ -89,3 +89,25 @@ describe('admin role rules', () => {
     });
   }
 });
+
+describe('quiz from a pasted transcript', () => {
+  it('passes the pasted transcript to the generator', async () => {
+    const { generateAndStoreQuiz } = await import('@/lib/quiz/generate');
+    sessionState.value = admin;
+    const transcript = 'machine learning '.repeat(20);
+    const res = await regenQuiz(req({ transcript }), CTX);
+    expect(res.status).toBe(200);
+    expect(generateAndStoreQuiz).toHaveBeenLastCalledWith(
+      fakeSupabase,
+      uuid,
+      undefined,
+      transcript.trim(),
+    );
+  });
+
+  it('rejects a transcript that is too short', async () => {
+    sessionState.value = admin;
+    const res = await regenQuiz(req({ transcript: 'too short' }), CTX);
+    expect(res.status).toBe(400);
+  });
+});

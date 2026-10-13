@@ -148,8 +148,12 @@ export async function generateAndStoreQuiz(
   supabase: SupabaseClient,
   lessonId: string,
   videoId: string,
+  transcript?: string,
 ): Promise<Quiz> {
-  const result = await generateQuiz(videoId);
+  const result = await generateQuiz(
+    videoId,
+    transcript ? { fetchTranscript: async () => transcript } : {},
+  );
 
   const { error: upsertError } = await supabase.from('quizzes').upsert(
     {
