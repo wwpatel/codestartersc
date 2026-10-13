@@ -119,3 +119,24 @@ describe('generateQuiz', () => {
     expect(fetchTranscript).not.toHaveBeenCalled();
   });
 });
+
+describe('generateQuiz request shape', () => {
+  it('does not force a tool call (newer models reject forced tool_choice)', async () => {
+    const { deps, createMessage } = makeDeps();
+    await generateQuiz('vid', deps);
+    const params = (createMessage.mock.calls[0] as unknown[])[0] as Anthropic.MessageCreateParamsNonStreaming;
+    expect(params.tool_choice).toEqual({ type: 'auto' });
+  });
+
+  it('accepts a quiz returned as plain JSON text instead of a tool call', async () => {
+    const text = {
+      ...toolUseMessage(VALID),
+      stop_reason: 'end_turn',
+      content: [{ type: 'text', text: `Here you go:\n\`\`\`json\n${JSON.stringify(VALID)}\n\`\`\`` }],
+    } as Anthropic.Message;
+    const { deps } = makeDeps({ createMessage: vi.fn(async () => text) });
+    const res = await generateQuiz('vid', deps);
+    expect(res.status).toBe('ready');
+    expect(res.questions).toHaveLength(5);
+  });
+});

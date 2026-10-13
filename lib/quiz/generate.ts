@@ -21,7 +21,7 @@ const SYSTEM_PROMPT =
   'You write short quizzes for students who just watched a lesson video. Use only facts that are stated in the transcript. Never rely on outside knowledge. Write in plain English for teenagers. Do not mention the transcript or the video itself in the questions.';
 
 function userPrompt(transcript: string) {
-  return `Transcript of the video:\n\n<transcript>\n${transcript}\n</transcript>\n\nWrite exactly 5 multiple-choice questions about what this video teaches. Each question has exactly 4 options, exactly one correct answer (correctIndex 0 to 3, vary the position across questions), and a one-sentence explanation of why the correct answer is right, based only on the transcript. Record the quiz with the record_quiz tool.`;
+  return `Transcript of the video:\n\n<transcript>\n${transcript}\n</transcript>\n\nWrite exactly 5 multiple-choice questions about what this video teaches. Each question has exactly 4 options, exactly one correct answer (correctIndex 0 to 3, vary the position across questions), and a one-sentence explanation of why the correct answer is right, based only on the transcript. Call the record_quiz tool with the finished quiz. Do not answer in plain text.`;
 }
 
 const TOOLS = [
@@ -76,7 +76,7 @@ function retryMessages(
 
 function defaultDeps(): GenerateDeps {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  const client = new Anthropic({ apiKey, timeout: 35_000, maxRetries: 0 });
+  const client = new Anthropic({ apiKey, timeout: 50_000, maxRetries: 0 });
   return {
     fetchTranscript,
     createMessage: (params) => client.messages.create(params),
@@ -101,10 +101,10 @@ export async function generateQuiz(
 
     const baseParams: Omit<Anthropic.MessageCreateParamsNonStreaming, 'messages'> = {
       model: d.model,
-      max_tokens: 2048,
+      max_tokens: 8192,
       system: SYSTEM_PROMPT,
       tools: TOOLS,
-      tool_choice: { type: 'tool', name: 'record_quiz' },
+      tool_choice: { type: 'auto' },
     };
 
     const first = await d.createMessage({
@@ -136,6 +136,7 @@ export async function generateQuiz(
       error: 'The model returned an invalid quiz twice.',
     };
   } catch (err) {
+    console.error('quiz: generation failed', err);
     return {
       status: 'failed',
       questions: [],

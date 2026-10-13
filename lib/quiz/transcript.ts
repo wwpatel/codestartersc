@@ -7,7 +7,7 @@ import {
 } from 'youtube-transcript';
 
 const MAX_CHARS = 60_000;
-const TIMEOUT_MS = 15_000;
+const TIMEOUT_MS = 8_000;
 
 function decodeEntities(text: string) {
   return text
