@@ -29,7 +29,15 @@ A learning site for [CodeStarters](https://codestarters.org). Students sign in a
    npm install
    ```
 
-3. Database: in the Supabase dashboard open the SQL Editor and run `supabase/migrations/20261012000000_init.sql`. (Or, with the Supabase CLI: `supabase link --project-ref <ref>` then `supabase db push`.) It creates the tables, the `is_admin()` helper, all RLS policies, and seeds the three sectors — AI, Robotics, Python — with no other content.
+3. Database: open `supabase/migrations/20261012000000_init.sql`, copy the whole file, then in the Supabase dashboard go to SQL Editor → New query, paste it and click Run. It creates the tables, the `is_admin()` helper, all RLS policies, and seeds the three sectors — AI, Robotics, Python — with no other content.
+
+   If you prefer the terminal and have the Supabase CLI installed, this does the same thing:
+
+   ```
+   npx supabase login
+   npx supabase link --project-ref <your-project-ref>
+   npx supabase db push
+   ```
 4. Turn off email confirmation: Authentication → Sign In / Providers → Email → disable "Confirm email". Accounts use usernames; the server maps each username to a synthetic address `username@cs-dashboard.example` that is never emailed, so confirmation must be off or sign-in will fail.
 5. Environment:
 
